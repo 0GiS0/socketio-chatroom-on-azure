@@ -1,0 +1,65 @@
+config:
+  target: "https://WEB_APP_NAME.azurewebsites.net/"
+  ensure:
+    maxErrorRate: 1 # fail if error rate exceeds 1%
+  engines:
+    socketio-v3: {}
+  phases:
+    - duration: 60
+      arrivalRate: 4
+  variables:
+    greeting:
+      [
+        "hola",
+        "¡Buenos días!",
+        "Hola gente",
+        "buenas",
+        "ya estamos todos",
+        "hola",
+      ]
+  processor: "./functions.js"
+scenarios:
+  - name: "Users who only log in"
+    weight: 10
+    engine: "socketio-v3"
+    flow:
+      - get:
+          url: "/"
+      - emit:
+          channel: "add user"
+          data: "lurker-{{$randomString()}}"
+      - think: 2
+  - name: "Users who only say hello"
+    weight: 20
+    engine: "socketio-v3"
+    flow:
+      - get:
+          url: "/"
+      - emit:
+          channel: "add user"
+          data: "quiet-{{ $randomString() }}"
+      - think: 5
+      - emit:
+          channel: "new message"
+          data: "{{ greeting }}"
+      - think: 5
+  - name: "Users who talk all the time"
+    weight: 70
+    engine: "socketio-v3"
+    flow:
+      - get:
+          url: "/"
+      - emit:
+          channel: "add user"
+          data: "chatty-{{ $randomString() }}"
+      - emit:
+          channel: "new message"
+          data: "{{ greeting }}"
+      - loop:
+          - function: "setMessage"
+          - emit:
+              channel: "new message"
+              data: "{{ message }}"
+          - think: 10
+        count: 10
+      - think: 1
