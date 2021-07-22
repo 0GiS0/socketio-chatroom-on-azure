@@ -61,7 +61,17 @@ resource "azurerm_app_service" "webapp" {
 
   site_config {
     websockets_enabled = true
-    linux_fx_version = "NODE|12.x"
+
+    #Node.js values
+    # linux_fx_version	Actual runtime
+    # NODE|10.1	        10.1.0
+    # NODE|10.6	        10.23.0 (not a typo)
+    # NODE|10.14	      10.14.2
+    # NODE|10-lts	      10.23.0
+    # NODE|12-lts	      12.19.0
+    # NODE|14-lts	      14.15.1
+
+    linux_fx_version = "NODE|12-lts"
   }
 
   app_settings = {
